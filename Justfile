@@ -47,3 +47,10 @@ lint:
 # Install dependencies
 install:
   pnpm install
+
+# Install yt-dlp standalone binary (no sudo, no pip) to ~/.local/bin
+install-ytdlp:
+  mkdir -p ~/.local/bin
+  curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o ~/.local/bin/yt-dlp
+  chmod +x ~/.local/bin/yt-dlp
+  ~/.local/bin/yt-dlp --version

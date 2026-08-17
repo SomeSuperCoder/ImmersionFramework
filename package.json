@@ -1,0 +1,14 @@
+{
+  "name": "immersion-framework",
+  "private": true,
+  "scripts": {
+    "dev": "just dev",
+    "test": "just test",
+    "build": "just build",
+    "lint": "just lint"
+  },
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=9"
+  }
+}

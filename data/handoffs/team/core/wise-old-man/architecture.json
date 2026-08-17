@@ -1,0 +1,38 @@
+{
+  "headers": {
+    "timestamp": "2026-08-17T00:00:00Z",
+    "agent_id": "team/core/wise-old-man",
+    "session_start": "2026-08-17T00:00:00Z",
+    "session_end": "2026-08-17T00:00:00Z",
+    "vector": "immersion-framework-v1"
+  },
+  "data": {
+    "shared": {
+      "key_facts": [
+        "YouTube Data API v3 captions.download REQUIRES OAuth + video ownership — USELESS for this project (users watch OTHER people's videos)",
+        "yt-dlp is the ONLY reliable subtitle extraction approach — no API key, TypeScript wrappers exist, extracts VTT from any public video",
+        "Modular monolith (NestJS modules) is the right architecture — greenfield, small team, extract to microservices later if needed",
+        "Subtitle sync via polling getCurrentTime() at 100ms — YouTube IFrame API has no caption-change event",
+        "Aggressive per-video-ID caching — subtitles never change, cache once serve forever",
+        "AnkiConnect runs on localhost:8765 — backend bridges the connection, not frontend",
+        "Auth is DEFERRED — Feature #1 doesn't need it, add when multi-user features arrive"
+      ],
+      "call_chains": [
+        "Frontend POST /api/videos {url} -> video.module -> subtitle.module -> yt-dlp child process -> VTT parse -> Drizzle -> Postgres",
+        "Frontend polls getCurrentTime() -> match to subtitle_segments -> render active line",
+        "Word click -> translation.module -> cache lookup or external API -> return translation"
+      ],
+      "blast_radius": [
+        "Entire project is greenfield — no existing files to break"
+      ],
+      "research_sources": [
+        "yt-dlp subtitle extraction: https://github.com/yt-dlp/yt-dlp",
+        "YouTube API captions.download requires ownership: https://developers.google.com/youtube/v3/docs/captions/download",
+        "NestJS modular monolith pattern: https://dev.to/geampiere/modular-monolith-vs-microservices-in-nestjs-223g",
+        "TubeVocab subtitle caching approach: https://dev.to/qcrao/what-i-learned-squeezing-the-youtube-data-api-v3-quota-for-a-side-project-3304"
+      ]
+    },
+    "for_teamlead": "GREEN — Full architecture recommendation delivered. Key decisions: (1) yt-dlp for subtitles (YouTube API requires video ownership — deal-breaker), (2) NestJS modular monolith with 6 domain modules, (3) pnpm monorepo with apps/web, apps/api, packages/shared, (4) Postgres schema with 6 tables covering the full roadmap, (5) Feature #1 MVP scope defined. The Software Architect should use this to create the formal OpenSpec. No blockers.",
+    "for_successor": "team/product/software-architect → Read this JSON's shared.key_facts and the full architecture recommendation in the opencode report. Create the formal OpenSpec spec for Feature #1 (YouTube subtitle player) using the module boundaries, data flow, and DB schema defined here."
+  }
+}

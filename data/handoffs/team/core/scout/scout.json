@@ -1,0 +1,62 @@
+{
+  "headers": {
+    "timestamp": "2026-08-12T00:00:00Z",
+    "agent_id": "team/core/scout",
+    "session_start": "2026-08-12T00:00:00Z",
+    "session_end": "2026-08-12T00:00:00Z",
+    "vector": "youtube-subtitle-extraction-research"
+  },
+  "data": {
+    "shared": {
+      "key_facts": [
+        "YouTube Data API v3 captions.download requires OAuth 2.0 (owner-only access) — 200 quota units per call, 10,000 free units/day total. NOT viable for arbitrary public videos.",
+        "captions.list costs 50 units, only lists tracks for OAuth-authenticated video owners.",
+        "Default YouTube API quota is 10,000 units/day combined for all non-search/non-video-insert endpoints.",
+        "yt-dlp can extract VTT subtitles via --write-sub --write-auto-sub --sub-lang en --sub-format vtt. Works programmatically via child_process.execFile. Handles age-restricted content with cookies. More robust for production than npm transcript libraries.",
+        "yt-dlp TypeScript wrapper exists: iqbal-rashed/ytdlp-nodejs (npm: ytdlp-nodejs) with .writeSubs().writeAutoSubs().subLangs(['en']).run() API.",
+        "youtube-transcript-api (npm, Node.js port by zachgodsell93): fetches transcripts via YouTube Innertube API, no API key required. Returns { text, start, duration } segments. BUT: hits undocumented timedtext endpoint, blocked from cloud/datacenter IPs (AWS, GCP, Azure, Vercel, Railway). Requires residential proxy for production.",
+        "youtube-transcript-api-js (npm, rajat-mehra05): lighter alternative, similar API, returns snippets array with { text, start, duration }.",
+        "ytsubs (npm, bguiz): wraps youtube-transcript-api internally, also has --method dlp flag to use yt-dlp as backend. Supports text/srt/vtt output.",
+        "youtubei.js (npm, LuanRT/YouTube.js): JavaScript client for YouTube InnerTube API. Has getTranscript() method via PR #500. Works for most videos but fails for some non-English transcripts (engagement-panel-searchable-transcript missing).",
+        "YouTube serves timedtext XML/JSON3 at https://www.youtube.com/api/timedtext?v={VIDEO_ID}&lang={LANG}&fmt=json3 — undocumented, not versioned, breaks occasionally.",
+        "PoToken requirement (2025-2026): YouTube now requires Proof-of-Origin tokens for caption requests. Libraries that don't handle this get empty 200 responses. bgutils-js can mint PoTokens but adds complexity.",
+        "Cloud IP blocking: YouTube aggressively blocks datacenter IPs from timedtext endpoint since late 2024. Even residential proxy services (Webshare) sometimes fail from cloud environments.",
+        "Rate limiting: ~100-200 requests/hour soft limit per IP on timedtext endpoint. After hitting 429, IP stays blocked for hours.",
+        "VTT vs SRT vs JSON: VTT is W3C standard for HTML5 <track>, uses period decimal (00:01:23.456). SRT uses comma decimal (00:01:23,456). YouTube returns XML by default, can request json3 format. JSON3 is best for programmatic parsing — structured with start/duration/text per cue.",
+        "YouTube IFrame Player API: player.getCurrentTime() returns elapsed seconds. setInterval polling at 100-250ms interval checks time against parsed caption array to find active cue. No built-in caption sync event — must poll.",
+        "YouTube IFrame API captions module: onApiChange event fires when captions module loads. Can set fontSize and reload captions via setOption('captions', ...). But no event for individual caption time updates.",
+        "Real-time sync pattern (proven): parse captions into array of { start, end, text }, poll player.getCurrentTime() every 100-250ms, find matching cue via findIndex(cue => currentTime >= cue.start && currentTime < cue.end).",
+        "Future word-level tokenization (Features #3, #4) requires structured timestamped data — VTT/JSON3 cues with start+duration are ideal since each cue can be tokenized to word-level timestamps."
+      ],
+      "call_chains": [
+        "User pastes URL → NestJS extracts video ID → SubtitleService fetches captions → Parser converts to structured JSON → Frontend embeds YouTube IFrame Player + polls getCurrentTime() to sync subtitle display",
+        "yt-dlp approach: SubtitleService → child_process.execFile('yt-dlp', [...args]) → writes .vtt to temp dir → parseVTT() → structured JSON → cache",
+        "npm library approach: SubtitleService → YouTubeTranscriptApi.fetch(videoId, { languages }) → snippets[] → structured JSON → cache",
+        "ytsubs approach: SubtitleService → extractFromVideo({ videoUrl, options }) → { text, timed_segments } → structured JSON → cache",
+        "IFrame sync: React component loads iframe_api → new YT.Player('player', { videoId }) → setInterval polls getCurrentTime() → findIndex in parsed captions array → setActiveCue"
+      ],
+      "blast_radius": [],
+      "research_sources": [
+        "https://developers.google.com/youtube/v3/docs/captions/download",
+        "https://developers.google.com/youtube/v3/determine_quota_cost",
+        "https://developers.google.com/youtube/iframe_api_reference",
+        "https://www.npmjs.com/package/youtube-transcript-api",
+        "https://www.npmjs.com/package/youtube-transcript-api-js",
+        "https://www.npmjs.com/package/ytsubs",
+        "https://www.npmjs.com/package/youtubei.js",
+        "https://github.com/LuanRT/YouTube.js",
+        "https://github.com/iqbal-rashed/ytdlp-nodejs",
+        "https://github.com/olo-dot-io/Uni-CLI/blob/main/src/social/video-text.ts",
+        "https://dev.to/qcrao/what-i-learned-squeezing-the-youtube-data-api-v3-quota-for-a-side-project-3304",
+        "https://dev.to/jamhimself/why-your-youtube-transcript-scraper-started-returning-empty-strings-and-how-to-fix-it-in-2026-20ed",
+        "https://github.com/jdepoix/youtube-transcript-api/issues/592",
+        "https://github.com/hallelx2/youtube-transcript-ts/issues/1",
+        "https://skipthewatch.com/blog/youtube-transcript-api-guide",
+        "https://www.w3.org/TR/webvtt1/",
+        "https://liveapi.com/blog/vtt-vs-srt/"
+      ]
+    },
+    "for_teamlead": "RECOMMENDED APPROACH: yt-dlp as the primary subtitle extraction backend, with youtube-transcript-api-js as a lightweight fallback. Rationale: (1) yt-dlp handles age-restricted content, proxies, cookies, and edge cases that npm libraries don't. It's battle-tested across thousands of sites. (2) youtube-transcript-api (Python) is the gold standard but is Python-only; the Node.js ports exist but face cloud IP blocking on the timedtext endpoint. yt-dlp also hits this endpoint but has built-in proxy/cookie handling that's more mature. (3) YouTube Data API v3 captions endpoint is NOT viable — requires OAuth owner-only access, 200 units per download, and doesn't expose auto-generated captions. ALTERNATIVE CONSIDERED: youtube-transcript-api-js alone — lighter, no system dependency, but fails from cloud IPs without residential proxy. For a NestJS app deployed to cloud, this is a dealbreaker. yt-dlp with proxy support is more robust. SUBTITLE FORMAT: Fetch as VTT from yt-dlp (--sub-format vtt), parse into structured JSON array: [{ start: number, end: number, text: string }]. For future word-level tokenization, request json3 format where possible or parse VTT cues to extract word timestamps from the cue text. IMPLEMENTATION SKETCH: Create SubtitleService in NestJS that: (1) accepts YouTube URL, extracts video ID, (2) spawns yt-dlp with --skip-download --write-sub --write-auto-sub --sub-lang en,es --sub-format vtt --convert-subs vtt, (3) reads resulting .vtt file from temp dir, (4) parses VTT into structured cues, (5) caches by videoId+lang, (6) returns { videoId, language, cues: [{start, end, text}] }. Frontend: YouTube IFrame Player embed + 250ms polling interval matching cues to getCurrentTime(). REAL-TIME SYNC: No YouTube API event for caption timing — must poll player.getCurrentTime() every 100-250ms and match against parsed cue array. This is the proven pattern used by successful subtitle sync apps. PRODUCTION GOTCHAS: (1) Auto-generated captions may have lower quality than manual — always try manual first. (2) Some videos have no captions at all — handle gracefully. (3) YouTube may change internal endpoints — yt-dlp updates frequently to handle this. (4) Cache aggressively — captions don't change for a given video+language. (5) Cloud deployments need proxy configuration for yt-dlp or transcript API fallback.",
+    "for_successor": "Next: platform/devops-engineer to set up yt-dlp as a system dependency in the deployment environment, OR frontend/ engineer to implement the YouTube IFrame Player integration with subtitle sync polling. The successor should read this JSON's shared.key_facts for the implementation details and shared.research_sources for the API documentation links."
+  }
+}

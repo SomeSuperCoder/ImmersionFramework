@@ -1,0 +1,43 @@
+{
+  "headers": {
+    "timestamp": "2026-08-17T12:00:00Z",
+    "agent_id": "team/product/software-architect",
+    "session_start": "2026-08-17T12:00:00Z",
+    "session_end": "2026-08-17T12:30:00Z",
+    "vector": "immersion-framework-v1"
+  },
+  "data": {
+    "shared": {
+      "key_facts": [
+        "Architecture spec written to ARCHITECTURE.md",
+        "Modular monolith with NestJS modules: VideoModule + SubtitleModule",
+        "2 DB tables for Feature #1: videos + subtitle_segments",
+        "Drizzle ORM with PostgreSQL",
+        "Zod schemas in packages/shared for frontend+backend validation",
+        "yt-dlp via child_process.execFile for subtitle extraction",
+        "VTT parser behind SubtitleParser interface",
+        "100ms polling for YouTube IFrame subtitle sync",
+        "Composition root at AppModule — all DI wired there",
+        "Error handling: AppError with categories + global exception filter"
+      ],
+      "call_chains": [
+        "AppModule -> VideoModule -> VideoService -> VideoRepository (Drizzle) -> videos table",
+        "AppModule -> SubtitleModule -> SubtitleService -> SubtitleRepository (Drizzle) -> subtitle_segments table",
+        "SubtitleService -> YtdlpExecutor -> child_process -> yt-dlp CLI",
+        "SubtitleService -> VttParser -> structured SubtitleCue[]",
+        "Frontend: UrlInputForm -> API client -> POST /api/v1/videos -> VideoService",
+        "Frontend: useSubtitleSync -> player.getCurrentTime() -> match cue -> highlight line"
+      ],
+      "blast_radius": [
+        "ARCHITECTURE.md (created)",
+        "data/handoffs/team/product/software-architect/architecture.json (created)"
+      ],
+      "research_sources": [
+        "ROADMAP.md",
+        "Wise Old Man consultation decisions (pre-made)"
+      ]
+    },
+    "for_teamlead": "GREEN — Architecture specification complete. ARCHITECTURE.md written with all 11 sections: system overview, principles, full directory tree, module boundaries (VideoModule + SubtitleModule with DI), Drizzle schema code for 2 tables, Zod schemas + API contracts for 4 endpoints, data flow diagrams, error handling (6 scenarios), testing strategy (unit + E2E), implementation order (5 phases), and decision record (10 decisions). Feature #1 MVP scope strictly maintained. SOLID verified on all modules. Ready for Tech Lead review + API Designer to refine contracts, then Engineer to scaffold.",
+    "for_successor": "Next: Tech Lead reviews ARCHITECTURE.md, then spawns API Designer to finalize OpenAPI spec, then Engineer to scaffold Phase 1. The architecture spec is the single source of truth — all implementation follows it."
+  }
+}

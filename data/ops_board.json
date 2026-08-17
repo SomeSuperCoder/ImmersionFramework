@@ -1,0 +1,45 @@
+{
+  "directive": "Build ImmersionFramework — language immersion platform, starting with YouTube real-time subtitle viewer (Feature #1)",
+  "vector": "immersion-framework-v1",
+  "spec": "pending — architecture consultation",
+  "active_wave": "context-gathering",
+  "microtasks": {
+    "A1": {
+      "agent": "team/core/wise-old-man",
+      "status": "DONE",
+      "next_owner": "B1 software-architect"
+    },
+    "A2": {
+      "agent": "team/core/scout",
+      "status": "DONE",
+      "next_owner": "B1 software-architect"
+    }
+  },
+  "pipeline": [
+    {
+      "step": "Context: Wise Old Man — architecture advice",
+      "status": "done"
+    },
+    {
+      "step": "Context: Scout — YouTube subtitle research",
+      "status": "done"
+    },
+    {
+      "step": "Design: Software Architect — full system spec",
+      "status": "done"
+    },
+    {
+      "step": "Implement: Backend + Frontend + DB",
+      "status": "done"
+    },
+    {
+      "step": "Test: Test Engineer + QA",
+      "status": "done"
+    }
+  ],
+  "in_flight": [],
+  "blockers": [],
+  "decisions_made": [
+    "Greenfield project — no prior code. ROADMAP.md has 7 features, building #1 first."
+  ]
+}

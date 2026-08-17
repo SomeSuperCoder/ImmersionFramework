@@ -1,3 +1,7 @@
+// Load .env BEFORE any module import — database.ts evaluates process.env.DATABASE_URL
+// at module-evaluation time (before NestJS init), so dotenv must run first. CJS require
+// order guarantees this import executes before the AppModule chain.
+import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
